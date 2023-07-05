@@ -11,11 +11,18 @@ function import(filename)
 
 	local source = loadfile(path);
 	if not source then
-		_G._MBuildImports[path] = { false, string.format("Failed to load file '%s'", path) };
+		local res = { false, string.format("Failed to load file '%s'", path) };
+		_G._MBuildImports[path] = res;
+		print(res[2]);
+		return unpack(res);
 	end
 
 	_G._MBuildImports[path] = { pcall(source) };
-	return unpack(_G._MBuildImports[path]);
+	local res = _G._MBuildImports[path];
+	if not res[1] then
+		print(res[2]);
+	end
+	return unpack(res);
 end
 
 function include(filename)
@@ -25,7 +32,14 @@ end
 
 local files = {
 	"Base.lua",
-	"Workspace.lua"
+	"Workspace.lua",
+	"Project.lua",
+	"Files.lua",
+	"When.lua",
+	"Config.lua",
+	"Configs.lua",
+
+	"API.lua"
 };
 for _, file in ipairs(files) do
 	import(file);

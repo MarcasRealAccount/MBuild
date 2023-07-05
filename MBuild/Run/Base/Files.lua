@@ -1,8 +1,5 @@
-dofile("API/MBuild.lua");
-
 MBuild.Files = MBuild.Files or {};
-
-local Files = MBuild.Files;
+local Files  = MBuild.Files;
 
 function Files:new(inclusions, exclusions, callback)
 	files = {
@@ -10,8 +7,9 @@ function Files:new(inclusions, exclusions, callback)
 		exclusions = exclusions,
 		callback   = callback,
 		whens      = {},
-		configs    = {},
-		configMap  = {}
+
+		configs   = {},
+		configMap = {}
 	};
 	setmetatable(files, self);
 	self.__index = self;

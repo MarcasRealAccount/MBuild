@@ -147,13 +147,13 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	/*lua_getfield(L, -1, "Configure");
+	lua_getfield(L, -1, "Configure");
 	lua_pushvalue(L, -2);
 	if (lua_pcall(L, 1, 0, 0))
 	{
 		std::fprintf(stderr, "%s\n", lua_tostring(L, -1));
 		return 1;
-	}*/
+	}
 
 	lua_pop(L, 1);
 

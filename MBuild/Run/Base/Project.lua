@@ -1,15 +1,13 @@
-dofile("API/MBuild.lua");
-
 MBuild.Project = MBuild.Project or {};
-
-local Project = MBuild.Project;
+local Project  = MBuild.Project;
 
 function Project:new(name, callback)
 	project = {
-		name      = name,
-		callback  = callback,
-		files     = {},
-		whens     = {},
+		name     = name,
+		callback = callback,
+		files    = {},
+		whens    = {},
+
 		location  = "./",
 		configs   = {},
 		configMap = {}
