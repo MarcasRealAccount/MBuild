@@ -13,8 +13,8 @@ function Workspace:new(name, callback)
 		location       = "./",
 		configs        = {},
 		configMap      = {},
-		configurations = {},
-		platforms      = {}
+		configurations = { "Debug", "Release" },
+		platforms      = { os.arch() }
 	};
 	setmetatable(workspace, self);
 	self.__index = self;

@@ -1,4 +1,7 @@
-Workspace("MBuild", function()
+print(MBuild.currentScript);
+print(fs.current_script_path());
+
+--[[Workspace("MBuild", function()
 	Location("./"); -- Default is './'
 
 	Configurations({ "Debug", "Release", "Dist" });
@@ -28,4 +31,4 @@ Workspace("MBuild", function()
 
 		ExternalDependencies({ "commonbuild", "backtrace", "luajit" });
 	end);
-end);
+end);]]--
