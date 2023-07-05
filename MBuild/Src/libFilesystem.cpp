@@ -1,7 +1,5 @@
 #include <lua.hpp>
 
-#include <cstdio>
-
 #include <chrono>
 #include <filesystem>
 
