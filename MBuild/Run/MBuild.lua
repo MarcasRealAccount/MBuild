@@ -3,8 +3,19 @@ Workspace("MBuild", function()
 
 	Configurations({ "Debug", "Release", "Dist" });
 
-	ObjDir("${workspace.location}/Bin/Int-${config.os}-${config.arch}-${config.name}/");
-	BinDir("${workspace.location}/Bin/${config.os}-${config.arch}-${config.name}/");
+	-- Defaults:
+	--CompilerMap({ ".cpp", ".c" }, function()
+	--	When("system == 'windows' and architecture == 'x86-64'", function() Compiler("MSVC/CL/x64"); end);
+	--	When("system == 'windows' and architecture == 'x86'",    function() Compiler("MSVC/CL/x86"); end);
+	--	When("system == 'linux' and architecture == 'x86-64'",   function() Compiler("GNU/gcc"); end);
+	--	When("system == 'linux' and architecture == 'x86'",      function() Compiler("GNU/gcc"); end);
+	--	When("system == 'macosx' and architecture == 'x86-64'",  function() Compiler("LLVM/clang"); end);
+	--	When("system == 'macosx' and architecture == 'x86'",     function() Compiler("LLVM/clang"); end);
+	--end);
+	--
+
+	ObjDir("${workspace.location}/Bin/Int-${config.system}-${config.arch}-${config.name}/");
+	BinDir("${workspace.location}/Bin/${config.system}-${config.arch}-${config.name}/");
 	RunDir("${project.location}/Run/");
 
 	Project("MBuild", function()
@@ -14,9 +25,5 @@ Workspace("MBuild", function()
 		
 		IncludeDirs({ "${project.location}/Src/" });
 		Files({ "${project.location}/Src/**" }, { "*.DS_Store" });
-
-		Files({ "${project.location}/Test/**" }, { "*.DS_Store" });
-
-		ExternalDependencies({ "commonbuild", "backtrace", "luajit" });
 	end);
 end);

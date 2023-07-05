@@ -67,6 +67,67 @@ function MBuild:InvokeMainScript(script)
 	return suc;
 end
 
+function MBuild:TransformString(str)
+	if type(str) ~= "string" then
+		error("TransformString() expects a string parameter, got '%s'", type(str));
+	end
+
+	local output = str;
+
+	while true do
+		local i, j = output:find("%$%b{}", offset);
+		if i == nil then
+			break;
+		end
+		local preStr  = output:sub(1, i - 1);
+		local postStr = output:sub(j + 1);
+
+		local evalStr  = "return " .. output:sub(i + 2, j - 1);
+		local suc, res = pcall(loadstring(evalStr));
+		if suc then
+			output = preStr .. tostring(res) .. postStr;
+		else
+			output = preStr .. postStr;
+		end
+	end
+
+	return output;
+end
+
+function MBuild:EvaluateConfigs(configMap)
+	for name, arr in pairs(configMap) do
+		local origConfig = _G.configuration;
+		_G.configuration = name;
+
+		for platform, config in pairs(arr) do
+			local origPlatform = _G.platform;
+			local origArch     = _G.architecture;
+			local origSystem   = _G.system;
+			_G.platform        = platform;
+			_G.architecture    = config.arch;
+			_G.system          = config.system;
+
+			local origConf = _G.config;
+			_G.config      = config;
+
+			for k, v in pairs(config.configs) do
+				local conf = MBuild.Configs.configs[k];
+				if conf then
+					config.configs[k] = conf.handler.evaluate(conf, v);
+				end
+			end
+
+			_G.config = origConf;
+
+			_G.platform     = origPlatform;
+			_G.architecture = origArch;
+			_G.system       = origSystem;
+		end
+		
+		_G.configuration = origConfig;
+	end
+end
+
 function MBuild:ConfigureWhens(configMap, whens, previousLayer)
 	for name, arr in pairs(configMap) do
 		local origConfig = _G.configuration;
@@ -108,6 +169,7 @@ function MBuild:ConfigureFiles(files, previousLayer)
 	self.currentLayer = self.filesLayer;
 
 	if files.callback then
+		-- TODO(MarcasRealAccount): Expand file configs to every individual file that matches the inclusions and exclusions!
 		self.currentConfigs = files.configs;
 		files.callback();
 		self.currentConfigs = nil;
@@ -161,6 +223,24 @@ end
 function MBuild:Configure()
 	for _, workspace in ipairs(self.workspaces) do
 		self:ConfigureWorkspace(workspace, self.globalLayer);
+	end
+
+	for _, workspace in ipairs(self.workspaces) do
+		local origWorkspace = _G.workspace;
+		_G.workspace        = workspace;
+
+		for _, project in ipairs(workspace.projects) do
+			local origProject = _G.project;
+			_G.project        = project;
+			
+			--for _, files in ipairs(project.files) do
+			--	self:EvaluateConfigs(files.configMap);
+			--end
+
+			_G.project = origProject;
+		end
+
+		_G.workspace = origWorkspace;
 	end
 
 	-- Debug

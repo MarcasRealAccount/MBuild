@@ -9,9 +9,9 @@ function import(filename)
 		return unpack(_G._MBuildImports[path]);
 	end
 
-	local source = loadfile(path);
+	local source, err = loadfile(path);
 	if not source then
-		local res = { false, string.format("Failed to load file '%s'", path) };
+		local res = { false, string.format("Failed to load file '%s':\n  %s", path, err) };
 		_G._MBuildImports[path] = res;
 		print(res[2]);
 		return unpack(res);

@@ -152,40 +152,84 @@ Configs.RegisterHandler({
 	name     = "bool",
 	callback = function(settings, value)
 		if type(value) ~= "boolean" then
-			error(string.format("'%s' requires boolean parameter got '%s'", settings.name, type(value)));
+			error(string.format("'%s' requires boolean parameter, got '%s'", settings.name, type(value)));
 		end
 		MBuild.currentConfigs[settings.key] = value;
+	end,
+	evaluate = function(settings, value)
+		return value;
 	end
 });
 Configs.RegisterHandler({
 	name     = "number",
 	callback = function(settings, value)
 		if type(value) ~= "number" then
-			error(string.format("'%s' requires number parameter got '%s'", settings.name, type(value)));
+			error(string.format("'%s' requires number parameter, got '%s'", settings.name, type(value)));
+		end
+		if not Configs.TestValid(value, settings.valid) then
+			error(string.format("'%s' requires a valid number, got '%s', valid values are: [ %s ]", settings.name, tostring(value), Configs.ValidValuesToString(settings.valid)));
 		end
 		MBuild.currentConfigs[settings.key] = value;
+	end,
+	evaluate = function(settings, value)
+		return value;
 	end
 });
 Configs.RegisterHandler({
 	name     = "int",
 	callback = function(settings, value)
 		if type(value) ~= "number" then
-			error(string.format("'%s' requires integer parameter got '%s'", settings.name, type(value)));
+			error(string.format("'%s' requires integer parameter, got '%s'", settings.name, type(value)));
 		end
 		value = math.tointeger(value);
 		if not value then
-			error(string.format("'%s' requires integer parameter got 'double'", settings.name));
+			error(string.format("'%s' requires integer parameter, got 'double'", settings.name));
+		end
+		if not Configs.TestValid(value, settings.valid) then
+			error(string.format("'%s' requires a valid integer, got '%s', valid values are: [ %s ]", settings.name, tostring(value), Configs.ValidValuesToString(settings.valid)));
 		end
 		MBuild.currentConfigs[settings.key] = value;
+	end,
+	evaluate = function(settings, value)
+		return value;
 	end
 });
 Configs.RegisterHandler({
 	name     = "string",
 	callback = function(settings, value)
 		if type(value) ~= "string" then
-			error(string.format("'%s' requires string parameter got '%s'", settings.name, type(value)));
+			error(string.format("'%s' requires string parameter, got '%s'", settings.name, type(value)));
+		end
+		if not Configs.TestValid(value, settings.valid) then
+			error(string.format("'%s' requires a valid string, got '%s', valid values are: [ %s ]", settings.name, tostring(value), Configs.ValidValuesToString(settings.valid)));
 		end
 		MBuild.currentConfigs[settings.key] = value;
+	end,
+	evaluate = function(settings, value)
+		if settings.transform then
+			return MBuild:TransformString(value);
+		else
+			return value;
+		end
+	end
+});
+Configs.RegisterHandler({
+	name     = "path",
+	callback = function(settings, value)
+		if type(value) ~= "string" then
+			error(string.format("'%s' requires string parameter, got '%s'", settings.name, type(value)));
+		end
+		if not Configs.TestValid(value, settings.valid) then
+			error(string.format("'%s' requires a valid path, got '%s', valid values are: [ %s ]", settings.name, tostring(value), Configs.ValidValuesToString(settings.valid)));
+		end
+		MBuild.currentConfigs[settings.key] = value;
+	end,
+	evaluate = function(settings, value)
+		if settings.transform then
+			return fs.absolute(MBuild:TransformString(value));
+		else
+			return fs.absolute(value);
+		end
 	end
 });
 
@@ -213,6 +257,9 @@ Configs.RegisterHandler({
 		else
 			MBuild.currentConfigs[settings.key] = value;
 		end
+	end,
+	evaluate = function(settings, value)
+		return value;
 	end
 });
 Configs.RegisterHandler({
@@ -228,6 +275,9 @@ Configs.RegisterHandler({
 			if type(v) ~= "number" then
 				error(string.format("'%s' requires a number or an array of number parameters got '%s'='%s'", settings.name, tostring(k), type(v)));
 			end
+			if not Configs.TestValid(v, settings.valid) then
+				error(string.format("'%s' requires valid numbers, got '%s', valid values are: [ %s ]", settings.name, tostring(v), Configs.ValidValuesToString(settings.valid)));
+			end
 		end
 		if settings.append then
 			MBuild.currentConfigs[settings.key] = MBuild.currentConfigs[settings.key] or {};
@@ -239,20 +289,14 @@ Configs.RegisterHandler({
 		else
 			MBuild.currentConfigs[settings.key] = value;
 		end
+	end,
+	evaluate = function(settings, value)
+		return value;
 	end
 });
 Configs.RegisterHandler({
 	name     = "int[]",
 	callback = function(settings, value)
-		if type(value) ~= "number" then
-			error(string.format("'%s' requires integer parameter got '%s'", settings.name, type(value)));
-		end
-		value = math.tointeger(value);
-		if not value then
-			error(string.format("'%s' requires integer parameter got 'double'", settings.name));
-		end
-		MBuild.currentConfigs[settings.key] = value;
-
 		if type(value) ~= "table" then
 			if type(value) ~= "number" then
 				error(string.format("'%s' requires an integer or an array of integer parameters got '%s'", settings.name, type(value)));
@@ -266,6 +310,9 @@ Configs.RegisterHandler({
 		for k, v in pairs(value) do
 			if type(v) ~= "number" then
 				error(string.format("'%s' requires an integer or an array of integer parameters got '%s'='%s'", settings.name, tostring(k), type(v)));
+			end
+			if not Configs.TestValid(v, settings.valid) then
+				error(string.format("'%s' requires valid integers, got '%s', valid values are: [ %s ]", settings.name, tostring(v), Configs.ValidValuesToString(settings.valid)));
 			end
 		end
 		if settings.append then
@@ -282,6 +329,9 @@ Configs.RegisterHandler({
 		else
 			MBuild.currentConfigs[settings.key] = value;
 		end
+	end,
+	evaluate = function(settings, value)
+		return value;
 	end
 });
 Configs.RegisterHandler({
@@ -297,6 +347,9 @@ Configs.RegisterHandler({
 			if type(v) ~= "string" then
 				error(string.format("'%s' requires a string or an array of string parameters got '%s'='%s'", settings.name, tostring(k), type(v)));
 			end
+			if not Configs.TestValid(v, settings.valid) then
+				error(string.format("'%s' requires valid strings, got '%s', valid values are: [ %s ]", settings.name, tostring(v), Configs.ValidValuesToString(settings.valid)));
+			end
 		end
 		if settings.append then
 			MBuild.currentConfigs[settings.key] = MBuild.currentConfigs[settings.key] or {};
@@ -308,23 +361,71 @@ Configs.RegisterHandler({
 		else
 			MBuild.currentConfigs[settings.key] = value;
 		end
+	end,
+	evaluate = function(settings, value)
+		if settings.transform then
+			for k, v in ipairs(value) do
+				value[k] = MBuild:TransformString(v);
+			end
+		end
+		return value;
+	end
+});
+Configs.RegisterHandler({
+	name     = "path[]",
+	callback = function(settings, value)
+		if type(value) ~= "table" then
+			if type(value) ~= "string" then
+				error(string.format("'%s' requires a string or an array of string parameters got '%s'", settings.name, type(value)));
+			end
+			value = { value };
+		end
+		for k, v in pairs(value) do
+			if type(v) ~= "string" then
+				error(string.format("'%s' requires a string or an array of string parameters got '%s'='%s'", settings.name, tostring(k), type(v)));
+			end
+			if not Configs.TestValid(v, settings.valid) then
+				error(string.format("'%s' requires valid paths, got '%s', valid values are: [ %s ]", settings.name, tostring(v), Configs.ValidValuesToString(settings.valid)));
+			end
+		end
+		if settings.append then
+			MBuild.currentConfigs[settings.key] = MBuild.currentConfigs[settings.key] or {};
+			
+			local arr = MBuild.currentConfigs[settings.key];
+			for k, v in pairs(value) do
+				table.insert(arr, v);
+			end
+		else
+			MBuild.currentConfigs[settings.key] = value;
+		end
+	end,
+	evaluate = function(settings, value)
+		if settings.transform then
+			for k, v in ipairs(value) do
+				value[k] = MBuild:TransformString(v);
+			end
+		end
+		return value;
 	end
 });
 
 Configs.RegisterConfig({
-	type = "string",
-	name = "ObjDir",
-	key  = "objDir"
+	type      = "path",
+	name      = "ObjDir",
+	key       = "objDir",
+	transform = true
 });
 Configs.RegisterConfig({
-	type = "string",
-	name = "BinDir",
-	key  = "binDir"
+	type      = "path",
+	name      = "BinDir",
+	key       = "binDir",
+	transform = true
 });
 Configs.RegisterConfig({
-	type = "string",
-	name = "RunDir",
-	key  = "runDir"
+	type      = "path",
+	name      = "RunDir",
+	key       = "runDir",
+	transform = true
 });
 Configs.RegisterConfig({
 	type  = "string",
@@ -339,14 +440,9 @@ Configs.RegisterConfig({
 	valid = { "ConsoleApp", "WindowedApp" }
 });
 Configs.RegisterConfig({
-	type   = "string[]",
-	name   = "IncludeDirs",
-	key    = "includeDirs",
-	append = true
-});
-Configs.RegisterConfig({
-	type   = "string[]",
-	name   = "ExternalDependencies",
-	key    = "externalDependencies",
-	append = true
+	type      = "path[]",
+	name      = "IncludeDirs",
+	key       = "includeDirs",
+	append    = true,
+	transform = true
 });

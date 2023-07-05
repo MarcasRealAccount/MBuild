@@ -426,8 +426,16 @@ static int FSAbsolute(lua_State* L)
 		return 1;
 	}
 
+	std::filesystem::path path = lua_tostring(L, 1);
+	if (path.is_absolute())
+	{
+		path = path.lexically_normal();
+		lua_pushstring(L, path.string().c_str());
+		return 1;
+	}
+
 	std::error_code ec;
-	auto            path = std::filesystem::absolute(lua_tostring(L, 1), ec);
+	path = std::filesystem::absolute(path, ec);
 	if (ec)
 	{
 		lua_pushnil(L);
