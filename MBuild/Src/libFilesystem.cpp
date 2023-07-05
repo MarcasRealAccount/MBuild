@@ -3,8 +3,6 @@
 #include <chrono>
 #include <filesystem>
 
-extern void DumpStack(lua_State* luaState);
-
 static std::filesystem::directory_options ParseDirectoryOptions(const char* str)
 {
 	std::filesystem::directory_options options = std::filesystem::directory_options::none;
